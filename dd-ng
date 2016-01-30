@@ -9,7 +9,20 @@ param() {
     fi
 }
 
-args=$(getopt -n "$0" -l "input-file:,output-file:,block-size:,input-block-size:,output-block-size:,input-seek:,output-seek:,input-flags:,output-flags:,count:,no-preserve-raw-device" -- "i:o:b:k:s:c:" "$@")
+usage() {
+    echo "Usage: $0 [{--input-file|-i} FILE] [{--output-file|-o} FILE] [{--block-size|-b} BYTES] [--input-block-size BYTES]\
+ [--output-block-size BYTES] [{--input-seek|-k} BLOCKS] [{--output-seek|-s} BLOCKS] [--input-flags FLAGS]\
+ [--output-flags FLAGS] [--no-preserve-raw-device]" >&2
+    echo "   Or: $0 --help" >&2
+}
+
+
+args=$(getopt -n "$0" -l "input-file:,output-file:,block-size:,input-block-size:,output-block-size:,input-seek:,output-seek:,input-flags:,output-flags:,count:,no-preserve-raw-device,help" -- "i:o:b:k:s:c:h" "$@")
+
+if [ $? != 0 ];then
+    usage
+    exit 1
+fi
 
 eval set -- $args
 
@@ -70,9 +83,14 @@ while [ "$1" != "--" ]; do
         shift
         ;;
 
+        -h|--help)
+        usage 2>&1
+        exit 0
+        ;;
+
         *)
         echo "$0: Mismatch between getopt and code, please contact maintainer" >&2
-        exit 1
+        exit 254
         ;;
     esac
 done
@@ -81,21 +99,22 @@ shift
 if [ -n "$1" ]; then
     echo "$0: Additional arguments passed: $@" >&2
     exit 2
+    usage
 fi
 
 if [ -n "$input_file" ]; then
     if [ -d "$input_file" ]; then
-        echo "Input file ‘$input_file’ is a directory." >&2
+        echo "$0: Input file ‘$input_file’ is a directory." >&2
         exit 3
     fi
 fi
 if [ -n "$output_file" ]; then
     if [ -d "$output_file" ]; then
-        echo "Output file ‘$output_file’ is a directory." >&2
+        echo "$0: Output file ‘$output_file’ is a directory." >&2
         exit 4
     fi
     if [ -e "$output_file" ] && [ ! -f "$output_file" ] && [ "$skip_devcheck" != 1 ]; then
-        echo "Output file ‘$output_file’ is not a regular file." >&2
+        echo "$0: Output file ‘$output_file’ is not a regular file." >&2
         echo "Use the ‘--no-preserve-raw-device’ parameter to write to a device or special file. Be careful!" >&2
         exit 5
     fi
