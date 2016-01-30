@@ -15,7 +15,8 @@ Usage
           [--output-block-size BYTES] [{--input-seek|-k} BLOCKS] [{--output-seek|-s} BLOCKS] [--input-flags FLAGS]
           [--output-flags FLAGS] [--no-preserve-raw-device]
 
- 
+Parameters
+----------
 
     --input-file FILE
     -iFILE
