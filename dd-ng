@@ -1,0 +1,93 @@
+#!/bin/sh
+
+param() {
+    dd_param="$1"
+    value="$2"
+
+    if [ -n "$value" ]; then
+        echo -n "'$dd_param'='$value'";
+    fi
+}
+
+args=$(getopt -n "$0" -l "input-file:,output-file:,block-size:,input-block-size:,output-block-size:,input-seek:,output-seek:,input-flags:,output-flags:,no-preserve-raw-device" -- "i:o:b:k:s:" "$@")
+
+eval set -- $args
+
+while [ "$1" != "--" ]; do
+    case "$1" in
+        -i|--input-file)
+        input_file="$2"
+        shift 2
+        ;;
+
+        -o|--output-file)
+        output_file="$2"
+        shift 2
+        ;;
+
+        -b|--block-size)
+        block_size="$2"
+        shift 2
+        ;;
+
+        --input-block-size)
+        input_block_size="$2"
+        shift 2
+        ;;
+
+        --output-block-size)
+        output_block_size="$2"
+        shift 2
+        ;;
+
+        -k|--input-seek)
+        input_seek="$2"
+        shift 2
+        ;;
+
+        -s|--output-seek)
+        output_seek="$2"
+        shift 2
+        ;;
+
+        --input-flags)
+        input_flags="$2"
+        shift 2
+        ;;
+
+        --output-flags)
+        output_flags="$2"
+        shift 2
+        ;;
+
+        --no-preserve-raw-device)
+        skip_devcheck=1
+        shift
+        ;;
+
+        *)
+        echo "Mismatch between getopt and code, please contact maintainer" >&2
+        exit 1
+        ;;
+    esac
+done
+
+if [ -n "$input_file" ]; then
+    if [ -d "$input_file" ]; then
+        echo "Input file ‘$input_file’ is a directory." >&2
+        exit 2
+    fi
+fi
+if [ -n "$output_file" ]; then
+    if [ -d "$output_file" ]; then
+        echo "Output file ‘$output_file’ is a directory." >&2
+        exit 3
+    fi
+    if [ -e "$output_file" ] && [ ! -f "$output_file" ] && [ "$skip_devcheck" != 1 ]; then
+        echo "Output file ‘$output_file’ is not a regular file." >&2
+        echo "Use the ‘--no-preserve-raw-device’ parameter to write to a device or special file. Be careful!" >&2
+        exit 4
+    fi
+fi
+
+eval dd $(param if "$input_file") $(param of "$output_file") $(param bs "$block_size") $(param ibs "$input_block_size") $(param obs "$output_block_size") $(param skip "$input_seek") $(param seek "$output_seek") $(param iflag "$input_flags") $(param oflag "$output_flags")
