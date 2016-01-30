@@ -6,6 +6,8 @@ This is a simple wrapper around `dd` that provides the following features:
 * Uses GNU-style syntax instead of weird mainframe-like syntax.
 * Adds sanity check for writing to devices. Non-regular files can only be written to by using the `--no-preserve-raw-device` flag.
 
+Note it does not yet support all `dd` options.
+
 Usage
 -----
 
